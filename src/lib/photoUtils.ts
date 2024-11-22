@@ -1,18 +1,30 @@
-import EXIF from 'exif-js';
+import ExifReader from 'exifreader';
 import { Photo, PhotoMetadata } from './types';
 
-const getExifData = (file: File): Promise<any> => {
-  return new Promise((resolve) => {
-    EXIF.getData(file as any, function(this: any) {
-      const exifData = EXIF.getAllTags(this);
-      console.log('EXIF data extracted:', exifData);
-      resolve(exifData);
-    });
-  });
+const getExifData = async (file: File): Promise<any> => {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const tags = await ExifReader.load(arrayBuffer);
+    console.log('EXIF data extracted:', tags);
+    return tags;
+  } catch (error) {
+    console.warn('Could not extract EXIF data:', error);
+    return {};
+  }
 };
 
-const convertDMSToDD = (degrees: number, minutes: number, seconds: number, direction: string) => {
-  let dd = degrees + minutes / 60 + seconds / 3600;
+const convertDMSToDD = (dms: any): number | null => {
+  if (!dms || !dms.description) return null;
+  
+  // DMS format comes as "52,29.5167N" or similar
+  const parts = dms.description.match(/(\d+),(\d+.\d+)([NSEW])/);
+  if (!parts) return null;
+  
+  const degrees = parseFloat(parts[1]);
+  const minutes = parseFloat(parts[2]);
+  const direction = parts[3];
+  
+  let dd = degrees + minutes / 60;
   if (direction === 'S' || direction === 'W') {
     dd = dd * -1;
   }
@@ -25,18 +37,12 @@ const extractGPSCoordinates = (exifData: any) => {
     return null;
   }
 
-  const latDegrees = exifData.GPSLatitude[0];
-  const latMinutes = exifData.GPSLatitude[1];
-  const latSeconds = exifData.GPSLatitude[2];
-  const latDirection = exifData.GPSLatitudeRef;
+  const latitude = convertDMSToDD(exifData.GPSLatitude);
+  const longitude = convertDMSToDD(exifData.GPSLongitude);
 
-  const lonDegrees = exifData.GPSLongitude[0];
-  const lonMinutes = exifData.GPSLongitude[1];
-  const lonSeconds = exifData.GPSLongitude[2];
-  const lonDirection = exifData.GPSLongitudeRef;
-
-  const latitude = convertDMSToDD(latDegrees, latMinutes, latSeconds, latDirection);
-  const longitude = convertDMSToDD(lonDegrees, lonMinutes, lonSeconds, lonDirection);
+  if (latitude === null || longitude === null) {
+    return null;
+  }
 
   return { latitude, longitude };
 };
@@ -46,15 +52,15 @@ export const extractMetadata = async (file: File): Promise<PhotoMetadata> => {
   console.log('Processing EXIF data for image:', file.name);
 
   const gpsCoordinates = extractGPSCoordinates(exifData);
-  const dateTimeOriginal = exifData.DateTimeOriginal;
+  const dateTimeOriginal = exifData.DateTimeOriginal?.description;
   
   let date: Date;
   if (dateTimeOriginal) {
-    // Convert EXIF date format (YYYY:MM:DD HH:mm:ss) to standard format
+    // ExifReader provides date in format "YYYY:MM:DD HH:mm:ss"
     const [datePart, timePart] = dateTimeOriginal.split(' ');
     const [year, month, day] = datePart.split(':');
     const [hour, minute, second] = timePart.split(':');
-    date = new Date(year, month - 1, day, hour, minute, second);
+    date = new Date(+year, +month - 1, +day, +hour, +minute, +second);
     console.log('Original photo date extracted:', date);
   } else {
     date = new Date(file.lastModified);
