@@ -110,6 +110,7 @@ export const extractMetadata = async (file: File): Promise<PhotoMetadata> => {
       id: Math.random().toString(36).substr(2, 9),
       date,
       gpsCoordinates: gpsCoordinates || undefined,
+      notes: [],
     };
   } catch (error) {
     console.error('Error extracting metadata:', error);

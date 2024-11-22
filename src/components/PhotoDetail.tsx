@@ -9,7 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface PhotoDetailProps {
   photo: Photo;
   onClose: () => void;
-  onSaveNote: (id: string, notes: string[]) => void;
+  onSaveNote: (id: string, notes: Array<{ text: string; createdAt: Date; }>) => void;
 }
 
 const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote }) => {
@@ -18,7 +18,12 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
   const handleSave = () => {
     if (!currentNote.trim()) return;
     
-    const updatedNotes = [...(photo.metadata.notes || []), currentNote];
+    const newNote = {
+      text: currentNote,
+      createdAt: new Date()
+    };
+    
+    const updatedNotes = [newNote, ...(photo.metadata.notes || [])];
     onSaveNote(photo.id, updatedNotes);
     setCurrentNote('');
   };
@@ -31,6 +36,16 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
+    }).format(date);
+  };
+
+  const formatNoteDate = (date: Date) => {
+    return new Intl.DateTimeFormat('default', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
     }).format(date);
   };
 
@@ -119,38 +134,41 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
             )}
           </div>
 
-          <div className="space-y-4">
+          {photo.metadata.notes && photo.metadata.notes.length > 0 && (
             <div className="space-y-2">
-              <label className="text-ios-text font-semibold">Add Note:</label>
-              <Textarea
-                value={currentNote}
-                onChange={(e) => setCurrentNote(e.target.value)}
-                className="w-full min-h-[100px]"
-                placeholder="Add a note about this photo..."
-              />
-              <Button
-                className="w-full bg-ios-blue text-white hover:bg-ios-blue/90"
-                onClick={handleSave}
-              >
-                Save Note
-              </Button>
-            </div>
-
-            {photo.metadata.notes && photo.metadata.notes.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-ios-text font-semibold">Previous Notes:</h3>
-                <ScrollArea className="h-[200px] rounded-md border p-4">
-                  {photo.metadata.notes.map((note, index) => (
-                    <div
-                      key={index}
-                      className="mb-2 p-2 bg-gray-50 rounded-md text-ios-text"
-                    >
-                      {note}
+              <h3 className="text-ios-text font-semibold">Notes:</h3>
+              <ScrollArea className="h-[200px] rounded-md border p-4">
+                {photo.metadata.notes.map((note, index) => (
+                  <div
+                    key={index}
+                    className="mb-2 p-3 bg-gray-50 rounded-md text-ios-text"
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <p className="flex-1">{note.text}</p>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {formatNoteDate(note.createdAt)}
+                      </span>
                     </div>
-                  ))}
-                </ScrollArea>
-              </div>
-            )}
+                  </div>
+                ))}
+              </ScrollArea>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label className="text-ios-text font-semibold">Add Note:</label>
+            <Textarea
+              value={currentNote}
+              onChange={(e) => setCurrentNote(e.target.value)}
+              className="w-full min-h-[100px]"
+              placeholder="Add a note about this photo..."
+            />
+            <Button
+              className="w-full bg-ios-blue text-white hover:bg-ios-blue/90"
+              onClick={handleSave}
+            >
+              Save Note
+            </Button>
           </div>
         </div>
       </div>

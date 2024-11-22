@@ -68,7 +68,7 @@ const Index = () => {
     });
   };
 
-  const handleSaveNote = (id: string, notes: string[]) => {
+  const handleSaveNote = (id: string, notes: Array<{ text: string; createdAt: Date; }>) => {
     setPhotos((prev) =>
       prev.map((photo) =>
         photo.id === id
