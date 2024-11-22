@@ -18,6 +18,17 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
     onSaveNote(photo.id, note);
   };
 
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('default', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(date);
+  };
+
   return (
     <Card className="fixed inset-0 z-50 bg-white overflow-auto animate-fadeIn">
       <div className="p-4">
@@ -42,14 +53,18 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
 
           <div className="space-y-2">
             <p className="text-ios-text">
-              <span className="font-semibold">Date:</span>{' '}
-              {photo.metadata.date.toLocaleString()}
+              <span className="font-semibold">Original Date:</span>{' '}
+              {formatDate(photo.metadata.date)}
             </p>
-            {photo.metadata.gpsCoordinates && (
+            {photo.metadata.gpsCoordinates ? (
               <p className="text-ios-text">
                 <span className="font-semibold">Location:</span>{' '}
                 {photo.metadata.gpsCoordinates.latitude.toFixed(6)},{' '}
                 {photo.metadata.gpsCoordinates.longitude.toFixed(6)}
+              </p>
+            ) : (
+              <p className="text-ios-text text-gray-500 italic">
+                No GPS data available for this photo
               </p>
             )}
           </div>
