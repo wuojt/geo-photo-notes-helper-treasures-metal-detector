@@ -19,7 +19,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, onPhotoClick }) => {
           <img
             src={photo.url}
             alt={`Photo ${photo.id}`}
-            className="w-full h-40 object-cover"
+            className="w-full h-48 md:h-56 lg:h-64 object-cover"
           />
           <div className="p-2 text-ios-text text-sm">
             {photo.metadata.date.toLocaleDateString()}

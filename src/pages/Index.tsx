@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Plus, Trash2 } from 'lucide-react';
 
+const MAX_PHOTOS = 100;
+
 const Index = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
@@ -18,6 +20,15 @@ const Index = () => {
     if (!files) return;
 
     console.log('Processing selected files:', files.length);
+
+    if (photos.length + files.length > MAX_PHOTOS) {
+      toast({
+        title: "Error",
+        description: `You can only add up to ${MAX_PHOTOS} photos. Currently: ${photos.length}`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const newPhotos = await Promise.all(
@@ -75,6 +86,7 @@ const Index = () => {
             <Button
               onClick={() => fileInputRef.current?.click()}
               className="bg-ios-blue text-white hover:bg-ios-blue/90"
+              disabled={photos.length >= MAX_PHOTOS}
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Photos
