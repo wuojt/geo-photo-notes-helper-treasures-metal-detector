@@ -6,6 +6,8 @@ import PhotoDetail from '@/components/PhotoDetail';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Plus, Trash2 } from 'lucide-react';
+import { useSettings } from '@/lib/settings';
+import { SettingsDialog } from '@/components/SettingsDialog';
 
 const MAX_PHOTOS = 100;
 
@@ -14,6 +16,7 @@ const Index = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { showNotifications } = useSettings();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -22,7 +25,7 @@ const Index = () => {
     console.log('Processing selected files:', files.length);
 
     if (photos.length + files.length > MAX_PHOTOS) {
-      toast({
+      showNotifications && toast({
         title: "Error",
         description: `You can only add up to ${MAX_PHOTOS} photos. Currently: ${photos.length}`,
         variant: "destructive",
@@ -45,13 +48,13 @@ const Index = () => {
       );
       
       setPhotos((prev) => [...prev, ...newPhotos]);
-      toast({
+      showNotifications && toast({
         title: "Success",
         description: `Added ${files.length} photo${files.length === 1 ? '' : 's'}`,
       });
     } catch (error) {
       console.error('Error processing photos:', error);
-      toast({
+      showNotifications && toast({
         title: "Error",
         description: "Failed to process photos",
         variant: "destructive",
@@ -62,7 +65,7 @@ const Index = () => {
   const handleDeleteAll = () => {
     setPhotos([]);
     setSelectedPhoto(null);
-    toast({
+    showNotifications && toast({
       title: "Success",
       description: "All photos have been deleted",
     });
@@ -87,7 +90,7 @@ const Index = () => {
           }
         : prev
     );
-    toast({
+    showNotifications && toast({
       title: "Success",
       description: "Note saved successfully",
     });
@@ -107,6 +110,7 @@ const Index = () => {
               <Plus className="w-5 h-5 mr-2" />
               Add Photos
             </Button>
+            <SettingsDialog />
             <Button
               onClick={handleDeleteAll}
               variant="destructive"
