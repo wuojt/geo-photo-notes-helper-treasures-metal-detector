@@ -20,10 +20,12 @@ const convertDMSToDD = (dms: any, ref: any): number => {
   }
   
   try {
-    // Convert DMS values to numbers and handle potential decimal values
-    const degrees = parseFloat(String(dms.value[0]).replace(',', '.')) || 0;
-    const minutes = parseFloat(String(dms.value[1]).replace(',', '.')) || 0;
-    const seconds = parseFloat(String(dms.value[2]).replace(',', '.')) / 100 || 0; // Divide by 100 as the seconds are in hundredths
+    // Pobierz wartości jako liczby całkowite
+    const degrees = parseInt(String(dms.value[0])) || 0;
+    const minutes = parseInt(String(dms.value[1])) || 0;
+    // Konwertuj sekundy z formatu setnych na właściwe sekundy
+    const rawSeconds = String(dms.value[2]);
+    const seconds = parseInt(rawSeconds) / Math.pow(10, rawSeconds.length - 2);
     
     let dd = degrees + (minutes / 60) + (seconds / 3600);
     
