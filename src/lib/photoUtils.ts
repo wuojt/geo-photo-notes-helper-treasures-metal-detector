@@ -17,17 +17,34 @@ const convertDMSToDD = (dms: any): number | null => {
   if (!dms || !dms.description) return null;
   
   try {
-    const parts = dms.description.match(/(\d+),(\d+.\d+)([NSEW])/);
-    if (!parts) return null;
-    
-    const degrees = parseFloat(parts[1]);
-    const minutes = parseFloat(parts[2]);
-    const direction = parts[3];
-    
-    let dd = degrees + minutes / 60;
+    // Handle different GPS coordinate formats
+    const parts = dms.description.split(' ');
+    if (parts.length === 0) return null;
+
+    let degrees = 0;
+    let minutes = 0;
+    let seconds = 0;
+    let direction = '';
+
+    // Parse the different parts of the coordinate
+    parts.forEach((part: string) => {
+      if (part.includes('°')) {
+        degrees = parseFloat(part.replace('°', ''));
+      } else if (part.includes("'")) {
+        minutes = parseFloat(part.replace("'", ''));
+      } else if (part.includes('"')) {
+        seconds = parseFloat(part.replace('"', ''));
+      } else if (['N', 'S', 'E', 'W'].includes(part)) {
+        direction = part;
+      }
+    });
+
+    let dd = degrees + (minutes / 60) + (seconds / 3600);
     if (direction === 'S' || direction === 'W') {
-      dd = dd * -1;
+      dd *= -1;
     }
+    
+    console.log('Converted coordinates:', { degrees, minutes, seconds, direction, dd });
     return dd;
   } catch (error) {
     console.error('Error converting DMS to DD:', error);
@@ -36,19 +53,35 @@ const convertDMSToDD = (dms: any): number | null => {
 };
 
 const extractGPSCoordinates = (exifData: any) => {
-  if (!exifData.GPSLatitude || !exifData.GPSLongitude) {
-    console.log('No GPS data found in EXIF');
+  console.log('Extracting GPS data from:', exifData);
+  
+  try {
+    if (!exifData.GPSLatitude || !exifData.GPSLongitude) {
+      console.log('No GPS data found in standard format');
+      // Try alternative GPS tags
+      if (exifData.gps && exifData.gps.Latitude && exifData.gps.Longitude) {
+        return {
+          latitude: parseFloat(exifData.gps.Latitude.description),
+          longitude: parseFloat(exifData.gps.Longitude.description)
+        };
+      }
+      return null;
+    }
+
+    const latitude = convertDMSToDD(exifData.GPSLatitude);
+    const longitude = convertDMSToDD(exifData.GPSLongitude);
+
+    if (latitude === null || longitude === null) {
+      console.log('Could not convert GPS coordinates');
+      return null;
+    }
+
+    console.log('Successfully extracted GPS coordinates:', { latitude, longitude });
+    return { latitude, longitude };
+  } catch (error) {
+    console.error('Error extracting GPS coordinates:', error);
     return null;
   }
-
-  const latitude = convertDMSToDD(exifData.GPSLatitude);
-  const longitude = convertDMSToDD(exifData.GPSLongitude);
-
-  if (latitude === null || longitude === null) {
-    return null;
-  }
-
-  return { latitude, longitude };
 };
 
 export const extractMetadata = async (file: File): Promise<PhotoMetadata> => {
