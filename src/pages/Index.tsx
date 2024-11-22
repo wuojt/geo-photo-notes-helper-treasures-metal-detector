@@ -5,7 +5,7 @@ import PhotoGrid from '@/components/PhotoGrid';
 import PhotoDetail from '@/components/PhotoDetail';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 const Index = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -39,6 +39,15 @@ const Index = () => {
     }
   };
 
+  const handleDeleteAll = () => {
+    setPhotos([]);
+    setSelectedPhoto(null);
+    toast({
+      title: "Success",
+      description: "All photos have been deleted",
+    });
+  };
+
   const handleSaveNote = (id: string, note: string) => {
     setPhotos((prev) =>
       prev.map((photo) =>
@@ -62,13 +71,24 @@ const Index = () => {
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold text-ios-text">Photo Notes</h1>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-ios-blue text-white hover:bg-ios-blue/90"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Photos
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-ios-blue text-white hover:bg-ios-blue/90"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Photos
+            </Button>
+            <Button
+              onClick={handleDeleteAll}
+              variant="destructive"
+              className="hover:bg-destructive/90"
+              disabled={photos.length === 0}
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              Delete All
+            </Button>
+          </div>
           <input
             type="file"
             ref={fileInputRef}
