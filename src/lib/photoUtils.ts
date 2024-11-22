@@ -20,14 +20,14 @@ const convertDMSToDD = (dms: any, ref: any): number => {
   }
   
   try {
-    const degrees = parseInt(String(dms.value[0])) || 0;
-    const minutes = parseInt(String(dms.value[1])) || 0;
-    const rawSeconds = String(dms.value[2]);
-    const seconds = parseInt(rawSeconds) / Math.pow(10, rawSeconds.length - 2);
+    // Obsługa zagnieżdżonych tablic w formacie [[degrees,1], [minutes,1], [seconds,100]]
+    const degrees = Array.isArray(dms.value[0]) ? dms.value[0][0] : parseInt(String(dms.value[0])) || 0;
+    const minutes = Array.isArray(dms.value[1]) ? dms.value[1][0] : parseInt(String(dms.value[1])) || 0;
+    const secondsArr = Array.isArray(dms.value[2]) ? dms.value[2] : [parseInt(String(dms.value[2])), 1];
+    const seconds = secondsArr[0] / secondsArr[1];
     
     let dd = degrees + (minutes / 60) + (seconds / 3600);
     
-    // Poprawiona obsługa ref - sprawdzamy czy jest tablicą
     const refValue = Array.isArray(ref?.value) ? ref.value[0] : ref?.value;
     if (refValue && (refValue === 'S' || refValue === 'W')) {
       dd *= -1;
