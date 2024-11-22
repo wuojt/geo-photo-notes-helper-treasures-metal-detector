@@ -4,18 +4,23 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { X, MapPin, Map } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PhotoDetailProps {
   photo: Photo;
   onClose: () => void;
-  onSaveNote: (id: string, note: string) => void;
+  onSaveNote: (id: string, notes: string[]) => void;
 }
 
 const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote }) => {
-  const [note, setNote] = useState(photo.metadata.note || '');
+  const [currentNote, setCurrentNote] = useState('');
 
   const handleSave = () => {
-    onSaveNote(photo.id, note);
+    if (!currentNote.trim()) return;
+    
+    const updatedNotes = [...(photo.metadata.notes || []), currentNote];
+    onSaveNote(photo.id, updatedNotes);
+    setCurrentNote('');
   };
 
   const formatDate = (date: Date) => {
@@ -114,22 +119,39 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-ios-text font-semibold">Note:</label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="w-full min-h-[100px]"
-              placeholder="Add a note about this photo..."
-            />
-          </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-ios-text font-semibold">Add Note:</label>
+              <Textarea
+                value={currentNote}
+                onChange={(e) => setCurrentNote(e.target.value)}
+                className="w-full min-h-[100px]"
+                placeholder="Add a note about this photo..."
+              />
+              <Button
+                className="w-full bg-ios-blue text-white hover:bg-ios-blue/90"
+                onClick={handleSave}
+              >
+                Save Note
+              </Button>
+            </div>
 
-          <Button
-            className="w-full bg-ios-blue text-white hover:bg-ios-blue/90"
-            onClick={handleSave}
-          >
-            Save Note
-          </Button>
+            {photo.metadata.notes && photo.metadata.notes.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-ios-text font-semibold">Previous Notes:</h3>
+                <ScrollArea className="h-[200px] rounded-md border p-4">
+                  {photo.metadata.notes.map((note, index) => (
+                    <div
+                      key={index}
+                      className="mb-2 p-2 bg-gray-50 rounded-md text-ios-text"
+                    >
+                      {note}
+                    </div>
+                  ))}
+                </ScrollArea>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Card>

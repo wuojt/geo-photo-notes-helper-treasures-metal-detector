@@ -32,7 +32,16 @@ const Index = () => {
 
     try {
       const newPhotos = await Promise.all(
-        Array.from(files).map(createPhotoObject)
+        Array.from(files).map(async (file) => {
+          const photo = await createPhotoObject(file);
+          return {
+            ...photo,
+            metadata: {
+              ...photo.metadata,
+              notes: [],
+            },
+          };
+        })
       );
       
       setPhotos((prev) => [...prev, ...newPhotos]);
@@ -59,18 +68,25 @@ const Index = () => {
     });
   };
 
-  const handleSaveNote = (id: string, note: string) => {
+  const handleSaveNote = (id: string, notes: string[]) => {
     setPhotos((prev) =>
       prev.map((photo) =>
         photo.id === id
           ? {
               ...photo,
-              metadata: { ...photo.metadata, note },
+              metadata: { ...photo.metadata, notes },
             }
           : photo
       )
     );
-    setSelectedPhoto(null);
+    setSelectedPhoto((prev) =>
+      prev?.id === id
+        ? {
+            ...prev,
+            metadata: { ...prev.metadata, notes },
+          }
+        : prev
+    );
     toast({
       title: "Success",
       description: "Note saved successfully",

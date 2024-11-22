@@ -5,7 +5,7 @@ export interface PhotoMetadata {
     latitude: number;
     longitude: number;
   };
-  note?: string;
+  notes: string[];
 }
 
 export interface Photo {
