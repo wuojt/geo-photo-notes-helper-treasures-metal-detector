@@ -3,7 +3,7 @@ import { Photo } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, MapPin } from 'lucide-react';
+import { X, MapPin, Map } from 'lucide-react';
 
 interface PhotoDetailProps {
   photo: Photo;
@@ -40,6 +40,10 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
   const getGoogleSearchUrl = (latitude: number, longitude: number): string => {
     const coordinates = `${latitude},${longitude}`;
     return `https://www.google.com/search?q=${encodeURIComponent(coordinates)}`;
+  };
+
+  const getGoogleMapsUrl = (latitude: number, longitude: number): string => {
+    return `https://www.google.com/maps/place/${latitude}%C2%B0N+${longitude}%C2%B0E/@${latitude},${longitude},15z`;
   };
 
   return (
@@ -83,10 +87,22 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center text-ios-blue hover:underline"
+                  className="inline-flex items-center text-ios-blue hover:underline block"
                 >
                   <MapPin className="w-4 h-4 mr-1" />
                   Search this location on Google
+                </a>
+                <a
+                  href={getGoogleMapsUrl(
+                    photo.metadata.gpsCoordinates.latitude,
+                    photo.metadata.gpsCoordinates.longitude
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-ios-blue hover:underline block"
+                >
+                  <Map className="w-4 h-4 mr-1" />
+                  View on Google Maps
                 </a>
               </div>
             ) : (
