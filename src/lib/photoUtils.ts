@@ -20,9 +20,10 @@ const convertDMSToDD = (dms: any, ref: any): number => {
   }
   
   try {
-    const degrees = parseFloat(dms.value[0]) || 0;
-    const minutes = parseFloat(dms.value[1]) || 0;
-    const seconds = parseFloat(dms.value[2]) || 0;
+    // Convert DMS values to numbers and handle potential decimal values
+    const degrees = parseFloat(String(dms.value[0]).replace(',', '.')) || 0;
+    const minutes = parseFloat(String(dms.value[1]).replace(',', '.')) || 0;
+    const seconds = parseFloat(String(dms.value[2]).replace(',', '.')) / 100 || 0; // Divide by 100 as the seconds are in hundredths
     
     let dd = degrees + (minutes / 60) + (seconds / 3600);
     
@@ -30,7 +31,11 @@ const convertDMSToDD = (dms: any, ref: any): number => {
       dd *= -1;
     }
     
-    console.log('Converted coordinates:', { degrees, minutes, seconds, ref: ref?.value, dd });
+    console.log('Converting DMS to DD:', {
+      original: { degrees, minutes, seconds, ref: ref?.value },
+      result: dd
+    });
+    
     return Number(dd.toFixed(6));
   } catch (error) {
     console.error('Error converting DMS to DD:', error);
