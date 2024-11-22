@@ -1,3 +1,15 @@
+My hobby is searching for treasures with a metal detector.
+I needed an app that could extract photos and GPS data and integrate with Google.
+I added the functionality to attach notes to photos and the option to disable notifications in the settings.
+
+About me:
+I am a software tester, and the app was created using AI.
+
+Instructions:
+1. Upload a photo.
+2. After uploading, click on the photo.
+3. The photo details will open.
+
 # Welcome to your Lovable project
 
 ## Project info
