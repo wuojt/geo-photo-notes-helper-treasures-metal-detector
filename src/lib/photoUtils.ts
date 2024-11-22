@@ -20,21 +20,21 @@ const convertDMSToDD = (dms: any, ref: any): number => {
   }
   
   try {
-    // Pobierz wartości jako liczby całkowite
     const degrees = parseInt(String(dms.value[0])) || 0;
     const minutes = parseInt(String(dms.value[1])) || 0;
-    // Konwertuj sekundy z formatu setnych na właściwe sekundy
     const rawSeconds = String(dms.value[2]);
     const seconds = parseInt(rawSeconds) / Math.pow(10, rawSeconds.length - 2);
     
     let dd = degrees + (minutes / 60) + (seconds / 3600);
     
-    if (ref && (ref.value === 'S' || ref.value === 'W')) {
+    // Poprawiona obsługa ref - sprawdzamy czy jest tablicą
+    const refValue = Array.isArray(ref?.value) ? ref.value[0] : ref?.value;
+    if (refValue && (refValue === 'S' || refValue === 'W')) {
       dd *= -1;
     }
     
     console.log('Converting DMS to DD:', {
-      original: { degrees, minutes, seconds, ref: ref?.value },
+      original: { degrees, minutes, seconds, ref: refValue },
       result: dd
     });
     
