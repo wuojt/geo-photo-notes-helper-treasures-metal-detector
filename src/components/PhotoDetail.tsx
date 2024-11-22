@@ -29,6 +29,14 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
     }).format(date);
   };
 
+  const formatCoordinate = (coord: any): string => {
+    if (typeof coord === 'string') {
+      const parsed = parseFloat(coord.replace(',', '.'));
+      return isNaN(parsed) ? '0.000000' : parsed.toFixed(6);
+    }
+    return typeof coord === 'number' ? coord.toFixed(6) : '0.000000';
+  };
+
   return (
     <Card className="fixed inset-0 z-50 bg-white overflow-auto animate-fadeIn">
       <div className="p-4">
@@ -59,8 +67,8 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
             {photo.metadata.gpsCoordinates ? (
               <p className="text-ios-text">
                 <span className="font-semibold">Location:</span>{' '}
-                {photo.metadata.gpsCoordinates.latitude.toFixed(6)},{' '}
-                {photo.metadata.gpsCoordinates.longitude.toFixed(6)}
+                {formatCoordinate(photo.metadata.gpsCoordinates.latitude)},{' '}
+                {formatCoordinate(photo.metadata.gpsCoordinates.longitude)}
               </p>
             ) : (
               <p className="text-ios-text text-gray-500 italic">

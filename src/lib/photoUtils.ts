@@ -13,16 +13,16 @@ const getExifData = async (file: File): Promise<any> => {
   }
 };
 
-const convertDMSToDD = (dms: any, ref: any): number | null => {
+const convertDMSToDD = (dms: any, ref: any): number => {
   if (!dms || !dms.value) {
     console.log('No DMS data found');
-    return null;
+    return 0;
   }
   
   try {
-    const degrees = dms.value[0];
-    const minutes = dms.value[1];
-    const seconds = dms.value[2];
+    const degrees = parseFloat(dms.value[0]) || 0;
+    const minutes = parseFloat(dms.value[1]) || 0;
+    const seconds = parseFloat(dms.value[2]) || 0;
     
     let dd = degrees + (minutes / 60) + (seconds / 3600);
     
@@ -31,10 +31,10 @@ const convertDMSToDD = (dms: any, ref: any): number | null => {
     }
     
     console.log('Converted coordinates:', { degrees, minutes, seconds, ref: ref?.value, dd });
-    return dd;
+    return Number(dd.toFixed(6));
   } catch (error) {
     console.error('Error converting DMS to DD:', error);
-    return null;
+    return 0;
   }
 };
 
@@ -42,7 +42,6 @@ const extractGPSCoordinates = (exifData: any) => {
   console.log('Extracting GPS data from:', exifData);
   
   try {
-    // Check for GPS data in different possible formats
     const gpsData = {
       latitude: exifData.GPSLatitude || exifData['gps:Latitude'] || exifData.gps?.Latitude,
       longitude: exifData.GPSLongitude || exifData['gps:Longitude'] || exifData.gps?.Longitude,
@@ -59,11 +58,6 @@ const extractGPSCoordinates = (exifData: any) => {
 
     const latitude = convertDMSToDD(gpsData.latitude, gpsData.latitudeRef);
     const longitude = convertDMSToDD(gpsData.longitude, gpsData.longitudeRef);
-
-    if (latitude === null || longitude === null) {
-      console.log('Could not convert GPS coordinates');
-      return null;
-    }
 
     console.log('Successfully extracted GPS coordinates:', { latitude, longitude });
     return { latitude, longitude };
