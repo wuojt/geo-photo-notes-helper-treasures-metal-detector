@@ -80,30 +80,32 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
                   {formatCoordinate(photo.metadata.gpsCoordinates.latitude)},{' '}
                   {formatCoordinate(photo.metadata.gpsCoordinates.longitude)}
                 </p>
-                <a
-                  href={getGoogleSearchUrl(
-                    photo.metadata.gpsCoordinates.latitude,
-                    photo.metadata.gpsCoordinates.longitude
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-ios-blue hover:underline block"
-                >
-                  <MapPin className="w-4 h-4 mr-1" />
-                  Search this location on Google
-                </a>
-                <a
-                  href={getGoogleMapsUrl(
-                    photo.metadata.gpsCoordinates.latitude,
-                    photo.metadata.gpsCoordinates.longitude
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-ios-blue hover:underline block"
-                >
-                  <Map className="w-4 h-4 mr-1" />
-                  View on Google Maps
-                </a>
+                <div className="flex flex-col space-y-2">
+                  <a
+                    href={getGoogleSearchUrl(
+                      photo.metadata.gpsCoordinates.latitude,
+                      photo.metadata.gpsCoordinates.longitude
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-ios-blue hover:underline"
+                  >
+                    <MapPin className="w-4 h-4 mr-1" />
+                    Search this location on Google
+                  </a>
+                  <a
+                    href={getGoogleMapsUrl(
+                      photo.metadata.gpsCoordinates.latitude,
+                      photo.metadata.gpsCoordinates.longitude
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-ios-blue hover:underline"
+                  >
+                    <Map className="w-4 h-4 mr-1" />
+                    View on Google Maps
+                  </a>
+                </div>
               </div>
             ) : (
               <p className="text-ios-text text-gray-500 italic">
