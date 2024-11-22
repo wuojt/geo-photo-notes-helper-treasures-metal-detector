@@ -20,7 +20,6 @@ const convertDMSToDD = (dms: any, ref: any): number => {
   }
   
   try {
-    // Obsługa zagnieżdżonych tablic w formacie [[degrees,1], [minutes,1], [seconds,100]]
     const degrees = Array.isArray(dms.value[0]) ? dms.value[0][0] : parseInt(String(dms.value[0])) || 0;
     const minutes = Array.isArray(dms.value[1]) ? dms.value[1][0] : parseInt(String(dms.value[1])) || 0;
     const secondsArr = Array.isArray(dms.value[2]) ? dms.value[2] : [parseInt(String(dms.value[2])), 1];
@@ -46,20 +45,26 @@ const convertDMSToDD = (dms: any, ref: any): number => {
 };
 
 const extractGPSCoordinates = (exifData: any) => {
+  if (!exifData) {
+    console.log('No EXIF data provided');
+    return null;
+  }
+
   console.log('Extracting GPS data from:', exifData);
   
   try {
+    // Sprawdzamy wszystkie możliwe ścieżki do danych GPS
     const gpsData = {
-      latitude: exifData.GPSLatitude || exifData['gps:Latitude'] || exifData.gps?.Latitude,
-      longitude: exifData.GPSLongitude || exifData['gps:Longitude'] || exifData.gps?.Longitude,
-      latitudeRef: exifData.GPSLatitudeRef || exifData['gps:LatitudeRef'] || exifData.gps?.LatitudeRef,
-      longitudeRef: exifData.GPSLongitudeRef || exifData['gps:LongitudeRef'] || exifData.gps?.LongitudeRef
+      latitude: exifData['GPS:Latitude'] || exifData.GPSLatitude || exifData.gps?.Latitude,
+      longitude: exifData['GPS:Longitude'] || exifData.GPSLongitude || exifData.gps?.Longitude,
+      latitudeRef: exifData['GPS:LatitudeRef'] || exifData.GPSLatitudeRef || exifData.gps?.LatitudeRef,
+      longitudeRef: exifData['GPS:LongitudeRef'] || exifData.GPSLongitudeRef || exifData.gps?.LongitudeRef
     };
 
-    console.log('Found GPS data:', gpsData);
+    console.log('Found raw GPS data:', gpsData);
 
     if (!gpsData.latitude || !gpsData.longitude) {
-      console.log('No GPS data found in any format');
+      console.log('No GPS coordinates found in EXIF data');
       return null;
     }
 
@@ -67,6 +72,12 @@ const extractGPSCoordinates = (exifData: any) => {
     const longitude = convertDMSToDD(gpsData.longitude, gpsData.longitudeRef);
 
     console.log('Successfully extracted GPS coordinates:', { latitude, longitude });
+    
+    if (latitude === 0 && longitude === 0) {
+      console.log('Invalid GPS coordinates (0,0)');
+      return null;
+    }
+
     return { latitude, longitude };
   } catch (error) {
     console.error('Error extracting GPS coordinates:', error);
