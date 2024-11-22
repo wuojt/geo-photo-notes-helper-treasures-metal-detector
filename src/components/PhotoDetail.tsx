@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { X, MapPin, Map } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PhotoDetailProps {
   photo: Photo;
@@ -12,8 +13,11 @@ interface PhotoDetailProps {
   onSaveNote: (id: string, notes: Array<{ text: string; createdAt: Date; }>) => void;
 }
 
+const MAX_NOTE_LENGTH = 1000;
+
 const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote }) => {
   const [currentNote, setCurrentNote] = useState('');
+  const { toast } = useToast();
 
   const handleSave = () => {
     if (!currentNote.trim()) return;
@@ -26,6 +30,19 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
     const updatedNotes = [newNote, ...(photo.metadata.notes || [])];
     onSaveNote(photo.id, updatedNotes);
     setCurrentNote('');
+  };
+
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    if (text.length <= MAX_NOTE_LENGTH) {
+      setCurrentNote(text);
+    } else {
+      toast({
+        title: "Character limit exceeded",
+        description: `Notes are limited to ${MAX_NOTE_LENGTH} characters`,
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -156,12 +173,15 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
           )}
 
           <div className="space-y-2">
-            <label className="text-ios-text font-semibold">Add Note:</label>
+            <label className="text-ios-text font-semibold">
+              Add Note: ({currentNote.length}/{MAX_NOTE_LENGTH})
+            </label>
             <Textarea
               value={currentNote}
-              onChange={(e) => setCurrentNote(e.target.value)}
+              onChange={handleNoteChange}
               className="w-full min-h-[100px]"
               placeholder="Add a note about this photo..."
+              maxLength={MAX_NOTE_LENGTH}
             />
             <Button
               className="w-full bg-ios-blue text-white hover:bg-ios-blue/90"
