@@ -151,27 +151,6 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
             )}
           </div>
 
-          {photo.metadata.notes && photo.metadata.notes.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-ios-text font-semibold">Notes:</h3>
-              <ScrollArea className="h-[200px] rounded-md border p-4">
-                {photo.metadata.notes.map((note, index) => (
-                  <div
-                    key={index}
-                    className="mb-2 p-3 bg-gray-50 rounded-md text-ios-text"
-                  >
-                    <div className="flex justify-between items-start gap-4">
-                      <p className="flex-1">{note.text}</p>
-                      <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {formatNoteDate(note.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </ScrollArea>
-            </div>
-          )}
-
           <div className="space-y-2">
             <label className="text-ios-text font-semibold">
               Add Note: ({currentNote.length}/{MAX_NOTE_LENGTH})
@@ -190,6 +169,27 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
               Save Note
             </Button>
           </div>
+
+          {photo.metadata.notes && photo.metadata.notes.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-ios-text font-semibold">Notes:</h3>
+              <div className="space-y-2">
+                {photo.metadata.notes.map((note, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-gray-50 rounded-md text-ios-text"
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <p className="flex-1 whitespace-pre-wrap break-words">{note.text}</p>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {formatNoteDate(note.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Card>
