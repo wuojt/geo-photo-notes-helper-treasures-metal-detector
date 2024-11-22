@@ -71,6 +71,13 @@ const Index = () => {
     });
   };
 
+  const handleDeletePhoto = (photoId: string) => {
+    setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+    if (selectedPhoto?.id === photoId) {
+      setSelectedPhoto(null);
+    }
+  };
+
   const handleSaveNote = (id: string, notes: Array<{ text: string; createdAt: Date; }>) => {
     setPhotos((prev) =>
       prev.map((photo) =>
@@ -136,7 +143,11 @@ const Index = () => {
             No photos yet. Click "Add Photos" to get started.
           </div>
         ) : (
-          <PhotoGrid photos={photos} onPhotoClick={setSelectedPhoto} />
+          <PhotoGrid 
+            photos={photos} 
+            onPhotoClick={setSelectedPhoto}
+            onPhotoDelete={handleDeletePhoto}
+          />
         )}
 
         {selectedPhoto && (
