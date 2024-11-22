@@ -5,30 +5,34 @@ const getExifData = async (file: File): Promise<any> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const tags = await ExifReader.load(arrayBuffer);
-    console.log('EXIF data extracted:', tags);
+    console.log('EXIF data extracted successfully:', tags);
     return tags;
   } catch (error) {
-    console.warn('Could not extract EXIF data:', error);
-    return {};
+    console.error('Error extracting EXIF data:', error);
+    throw new Error('Failed to extract EXIF data');
   }
 };
 
 const convertDMSToDD = (dms: any): number | null => {
   if (!dms || !dms.description) return null;
   
-  // DMS format comes as "52,29.5167N" or similar
-  const parts = dms.description.match(/(\d+),(\d+.\d+)([NSEW])/);
-  if (!parts) return null;
-  
-  const degrees = parseFloat(parts[1]);
-  const minutes = parseFloat(parts[2]);
-  const direction = parts[3];
-  
-  let dd = degrees + minutes / 60;
-  if (direction === 'S' || direction === 'W') {
-    dd = dd * -1;
+  try {
+    const parts = dms.description.match(/(\d+),(\d+.\d+)([NSEW])/);
+    if (!parts) return null;
+    
+    const degrees = parseFloat(parts[1]);
+    const minutes = parseFloat(parts[2]);
+    const direction = parts[3];
+    
+    let dd = degrees + minutes / 60;
+    if (direction === 'S' || direction === 'W') {
+      dd = dd * -1;
+    }
+    return dd;
+  } catch (error) {
+    console.error('Error converting DMS to DD:', error);
+    return null;
   }
-  return dd;
 };
 
 const extractGPSCoordinates = (exifData: any) => {
@@ -48,37 +52,48 @@ const extractGPSCoordinates = (exifData: any) => {
 };
 
 export const extractMetadata = async (file: File): Promise<PhotoMetadata> => {
-  const exifData = await getExifData(file);
-  console.log('Processing EXIF data for image:', file.name);
+  try {
+    console.log('Starting metadata extraction for:', file.name);
+    const exifData = await getExifData(file);
+    console.log('Processing EXIF data for image:', file.name);
 
-  const gpsCoordinates = extractGPSCoordinates(exifData);
-  const dateTimeOriginal = exifData.DateTimeOriginal?.description;
-  
-  let date: Date;
-  if (dateTimeOriginal) {
-    // ExifReader provides date in format "YYYY:MM:DD HH:mm:ss"
-    const [datePart, timePart] = dateTimeOriginal.split(' ');
-    const [year, month, day] = datePart.split(':');
-    const [hour, minute, second] = timePart.split(':');
-    date = new Date(+year, +month - 1, +day, +hour, +minute, +second);
-    console.log('Original photo date extracted:', date);
-  } else {
-    date = new Date(file.lastModified);
-    console.log('Using file modification date:', date);
+    const gpsCoordinates = extractGPSCoordinates(exifData);
+    const dateTimeOriginal = exifData.DateTimeOriginal?.description;
+    
+    let date: Date;
+    if (dateTimeOriginal) {
+      const [datePart, timePart] = dateTimeOriginal.split(' ');
+      const [year, month, day] = datePart.split(':');
+      const [hour, minute, second] = timePart.split(':');
+      date = new Date(+year, +month - 1, +day, +hour, +minute, +second);
+      console.log('Original photo date extracted:', date);
+    } else {
+      date = new Date(file.lastModified);
+      console.log('Using file modification date:', date);
+    }
+
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      date,
+      gpsCoordinates: gpsCoordinates || undefined,
+    };
+  } catch (error) {
+    console.error('Error extracting metadata:', error);
+    throw new Error('Failed to extract photo metadata');
   }
-
-  return {
-    id: Math.random().toString(36).substr(2, 9),
-    date,
-    gpsCoordinates: gpsCoordinates || undefined,
-  };
 };
 
 export const createPhotoObject = async (file: File): Promise<Photo> => {
-  const metadata = await extractMetadata(file);
-  return {
-    id: metadata.id,
-    url: URL.createObjectURL(file),
-    metadata
-  };
+  try {
+    console.log('Creating photo object for:', file.name);
+    const metadata = await extractMetadata(file);
+    return {
+      id: metadata.id,
+      url: URL.createObjectURL(file),
+      metadata
+    };
+  } catch (error) {
+    console.error('Error creating photo object:', error);
+    throw new Error('Failed to process photo');
+  }
 };
