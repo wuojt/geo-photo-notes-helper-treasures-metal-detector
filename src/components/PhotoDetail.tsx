@@ -3,7 +3,7 @@ import { Photo } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
 
 interface PhotoDetailProps {
   photo: Photo;
@@ -37,6 +37,11 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
     return typeof coord === 'number' ? coord.toFixed(6) : '0.000000';
   };
 
+  const getGoogleSearchUrl = (latitude: number, longitude: number): string => {
+    const coordinates = `${latitude},${longitude}`;
+    return `https://www.google.com/search?q=${encodeURIComponent(coordinates)}`;
+  };
+
   return (
     <Card className="fixed inset-0 z-50 bg-white overflow-auto animate-fadeIn">
       <div className="p-4">
@@ -65,11 +70,25 @@ const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onClose, onSaveNote })
               {formatDate(photo.metadata.date)}
             </p>
             {photo.metadata.gpsCoordinates ? (
-              <p className="text-ios-text">
-                <span className="font-semibold">Location:</span>{' '}
-                {formatCoordinate(photo.metadata.gpsCoordinates.latitude)},{' '}
-                {formatCoordinate(photo.metadata.gpsCoordinates.longitude)}
-              </p>
+              <div className="space-y-1">
+                <p className="text-ios-text">
+                  <span className="font-semibold">Location:</span>{' '}
+                  {formatCoordinate(photo.metadata.gpsCoordinates.latitude)},{' '}
+                  {formatCoordinate(photo.metadata.gpsCoordinates.longitude)}
+                </p>
+                <a
+                  href={getGoogleSearchUrl(
+                    photo.metadata.gpsCoordinates.latitude,
+                    photo.metadata.gpsCoordinates.longitude
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-ios-blue hover:underline"
+                >
+                  <MapPin className="w-4 h-4 mr-1" />
+                  Search this location on Google
+                </a>
+              </div>
             ) : (
               <p className="text-ios-text text-gray-500 italic">
                 No GPS data available for this photo
